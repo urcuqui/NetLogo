@@ -42,9 +42,6 @@ end
 
 to pintar
 
-histogram [count link-neighbors] of turtles
-end
-
 ;Guarda la red
 to save-matrix [filename]
   if file-exists? filename [ file-delete filename ]
@@ -64,6 +61,10 @@ to save-matrix [filename]
   ]
   file-close
 end
+
+histogram [count link-neighbors] of turtles
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 177
