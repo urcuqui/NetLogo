@@ -1,50 +1,55 @@
-globals [g]
-;Funcion para crear los agentes de acuerdo al parametro tortugas, las crea en una  posición aleatoria, carita feliz de color amarillo y tamaño 1
-to initio
-  clear-all
-    crt tortugas
-   ask turtles [
-    set xcor random-xcor
-    set ycor random-ycor
+;;new color es una propiedad de los patches
+patches-own [new-color]
 
-    set color (yellow + 2)
-    set size 1
-  ]
-   reset-ticks
+to setup
+ clear-all
+ reset-ticks
+ ask patches [set pcolor one-of[white blue]];; pitar toda la cuadricula de dos colores
 end
 
-;Genera una caminata aleatoria para valores de 0 a 360 y camina en esa dirección un paso, si se encuentran en un mismo lugar generan un enlace
-;finalmente pinta la distribución del grado
-to go
-  ;Caminata aleatoria
-  ask turtles[set heading ((random 4) * 90)
-    forward 1
-  ;Relación cuando se encuentran en un patch de derecha y encima de 10
-    ask other turtles-on patch-right-and-ahead 10 10 [
-      if not link-neighbor? myself [
-        create-link-with myself
-      ]
-    ]
-  ;Cambiar el color cuando se encuentran en el mismo patch
-  ask other turtles-on patch-here [
+to setup_random
+ clear-all
+ reset-ticks
+ ask patches [set pcolor white];; pitar toda la cuadricula colore blanco
+ repeat ( world-width * world-width ) * (PorcentajeCelulas) [ ask patch random-xcor random-ycor [ set pcolor blue ] ]; pita aleatoriamente pathces de la cuadrícula de blue (celulas vivas)
+end
 
+to go
+
+ tick;;avanza el tick y modifica el mundo
+ ask patches[;;lo hace para patch
+
+   let num-live-neigbors count (neighbors with [pcolor = blue]);; cuenta cuantas celulas vivas hay, blue patch
+
+   ;;da un color a new-color de acuerdo con las reglas; atencion el color depene del if-else
+   set new-color pcolor
+   if-else (pcolor = blue)[ ;; si esta vivo
+     if (num-live-neigbors < 7 or num-live-neigbors > 7)[set new-color white] ;; si en el vecindario hay menos de dos vivas o mas de tres vivas = muere es decir patch
+   ]
+   [; asi se define el else en un if-else
+   if(num-live-neigbors = 2)[set new-color blue]; si en el vecindario hay tres vivos entonces se mantiene vivo
+   ];;cierra el if-else
+
+
+
+ ];;cierra patches
+ ask patches [ set pcolor new-color];; se asigna el nuevo color a los patches
+ ask turtles [
+
+   let num-live-neigbors count (neighbors with [pcolor = blue]);; cuenta cuantas celulas vivas hay, blue patch
+
+   if (num-live-neigbors = 1) [
        if not link-neighbor? myself [
        set color (red + 2)
        create-link-with myself
 
-      ]
-    ]
+      ]]
 
-  ]
+   ]
 
-  tick
+
+
 end
-
-to pintar
-
-histogram [count link-neighbors] of turtles
-end
-
 
 ;Guarda la red
 to save-matrix [filename]
@@ -67,26 +72,26 @@ to save-matrix [filename]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-177
-172
-465
-481
-16
-16
-8.424242424242424
+339
+27
+812
+429
+50
+40
+4.5842
 1
 10
 1
 1
 1
 0
+0
+0
 1
-1
-1
--16
-16
--16
-16
+-50
+50
+-40
+40
 0
 0
 1
@@ -94,12 +99,12 @@ ticks
 30.0
 
 BUTTON
-30
-79
-100
-112
-crear
-clear-all\ninitio
+8
+126
+323
+159
+Setup Game of life
+setup
 NIL
 1
 T
@@ -111,62 +116,76 @@ NIL
 1
 
 BUTTON
-105
-80
-160
-113
-move
+10
+222
+318
+255
+Simular Game of Life
 go
-T
+NIL
 1
 T
 OBSERVER
 NIL
-M
+NIL
 NIL
 NIL
 1
 
 SLIDER
-5
-20
-177
-53
-tortugas
-tortugas
-0
-1000
 6
+25
+316
+58
+PorcentajeCelulas
+PorcentajeCelulas
+0
 1
+0.1
+0.1
 1
 NIL
 HORIZONTAL
 
-PLOT
-188
-15
-388
-165
-degree distribution
-Total degree
-Total turtles
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 1 -16777216 true "" "histogram [count link-neighbors] of turtles"
+BUTTON
+8
+174
+321
+207
+Setup Game of life - PorcentageCelulas
+setup_random
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+7
+74
+316
+107
+NumberIterations
+NumberIterations
+1
+1000
+361
+10
+1
+NIL
+HORIZONTAL
 
 BUTTON
-26
-150
-103
-183
-Guardar
-save-matrix \"turtle.txt\"
+9
+265
+322
+298
+Simular Game of life - NumberIterations
+repeat Numberiterations [go]
 NIL
 1
 T
@@ -180,33 +199,38 @@ NIL
 @#$#@#$#@
 ## WHAT IS IT?
 
-Un modelo de caminata aleatoria que genera una red
+The game of life based on https://www.youtube.com/watch?v=TZLPBTd87Ms
+
+
 ## HOW IT WORKS
-En cada paso los agentes siguen una caminta aleatoria, si dos agentes se encuentran en un mismo lugar se genera un vinculo entre ellos
+
+There are tow setups: one based random and other based on percentage random. Then, the simple game of life running
+
 ## HOW TO USE IT
-utilice el boton crear para iniciar el modelo y modifique el slider tortugas para incrementar el número de agentes, utilice el boton mover para inicar la simulación
+
+Modify the paramenter porcentageCelulas and running
 ## THINGS TO NOTICE
 
-Note la distribucción del grado
-
+the emergence of patterns
 ## THINGS TO TRY
-Cambie el número de agentes y observe si hay algun cambio
+-Create new initial setup configurations
 
 ## EXTENDING THE MODEL
+-Running other rules about neighborhood
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
 ## NETLOGO FEATURES
 
 (interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
 
 ## RELATED MODELS
+Conway's Game of Life
+https://www.youtube.com/watch?v=TZLPBTd87Ms
 
-random walk, random network
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+Conway, J. (1970). The game of life. Scientific American, 223(4), 4.
 @#$#@#$#@
 default
 true
@@ -518,18 +542,6 @@ NetLogo 5.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
-<experiments>
-  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
-    <setup>initio</setup>
-    <go>go</go>
-    <timeLimit steps="50"/>
-    <metric>count turtles</metric>
-    <metric>g</metric>
-    <enumeratedValueSet variable="tortugas">
-      <value value="25"/>
-    </enumeratedValueSet>
-  </experiment>
-</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
