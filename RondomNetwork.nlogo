@@ -19,12 +19,13 @@ to go
   ;Caminata aleatoria
   ask turtles[set heading ((random 4) * 90)
     forward 1
-  ;Relación cuando se encuentran en el mismo patch
+  ;Relación cuando se encuentran en un patch de derecha y encima de 10
     ask other turtles-on patch-right-and-ahead 10 10 [
       if not link-neighbor? myself [
         create-link-with myself
       ]
     ]
+  ;Cambiar el color cuando se encuentran en el mismo patch
   ask other turtles-on patch-here [
 
        if not link-neighbor? myself [
@@ -35,13 +36,33 @@ to go
     ]
 
   ]
-  crt 10
+
   tick
 end
 
 to pintar
 
 histogram [count link-neighbors] of turtles
+end
+
+;Guarda la red
+to save-matrix [filename]
+  if file-exists? filename [ file-delete filename ]
+  file-open filename
+  let turtle-list sort turtles
+  foreach turtle-list [
+    let source ?
+    foreach turtle-list [
+       let target ?
+       ifelse [ link-neighbor? target ] of source [
+         file-type "1 "
+       ] [
+         file-type "0 "
+       ]
+    ]
+    file-print ""
+  ]
+  file-close
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -137,6 +158,23 @@ false
 "" ""
 PENS
 "default" 1.0 1 -16777216 true "" "histogram [count link-neighbors] of turtles"
+
+BUTTON
+26
+150
+103
+183
+Guardar
+save-matrix \"turtle.txt\"
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
